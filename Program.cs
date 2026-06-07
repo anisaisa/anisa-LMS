@@ -240,18 +240,19 @@ using (var scope = app.Services.CreateScope())
 app.UseCors("Angular");
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
+    //  app.UseSwagger();
+    // app.UseSwaggerUI();
+    //}
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+    //app.UseHttpsRedirection();
 
-//app.UseHttpsRedirection();
-
-app.UseAuthentication();
+    app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<anisa_lms.Middleware.EnrollmentAccessExceptionMiddleware>();
 
 app.MapControllers();
 
-app.Run();
+app.Run(); 
