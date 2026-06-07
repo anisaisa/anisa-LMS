@@ -14,17 +14,54 @@ namespace anisa_lms.Repositories
         {
             var totalUsers = await _context.Users.CountAsync();
             var totalCourses = await _context.Courses.CountAsync();
-            var popularCourses = await _context.Courses.AsNoTracking().OrderByDescending(c => c.Enrollments.Count()).Take(5).ToListAsync();
-            var recentCourses = await _context.Courses.AsNoTracking().OrderByDescending(c => c.CreatedAt).Take(5).ToListAsync();
+
+            var popularCourses = await _context.Courses
+                .AsNoTracking()
+                .Select(c => new DashboardCourseDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    Status = c.Status.ToString(),
+                    CreatedAt = c.CreatedAt,
+                    MaxEnrollments = c.MaxEnrollments,
+                    EnrollmentCount = c.Enrollments.Count(),
+                    InstructorFullName = c.Instructor != null
+                        ? c.Instructor.FullName
+                        : ""
+                })
+                .OrderByDescending(c => c.EnrollmentCount)
+                .Take(5)
+                .ToListAsync();
+
+            var recentCourses = await _context.Courses
+                .AsNoTracking()
+                .Select(c => new DashboardCourseDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    Status = c.Status.ToString(),
+                    CreatedAt = c.CreatedAt,
+                    MaxEnrollments = c.MaxEnrollments,
+                    EnrollmentCount = c.Enrollments.Count(),
+                    InstructorFullName = c.Instructor != null
+                        ? c.Instructor.FullName
+                        : ""
+                })
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(5)
+                .ToListAsync();
 
             return new AdminDashboardDto
             {
                 TotalUsers = totalUsers,
                 TotalCourses = totalCourses,
                 PopularCourses = popularCourses,
-                RecentCourses = recentCourses,
+                RecentCourses = recentCourses
             };
         }
+
 
         public async Task<InstructorDashboardDto> GetInstructorDashboardAsync(string instructorId)
         {

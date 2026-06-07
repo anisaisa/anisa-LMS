@@ -1,0 +1,6 @@
+@anisa_lms_HostAddress = http://localhost:5000
+
+GET {{anisa_lms_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

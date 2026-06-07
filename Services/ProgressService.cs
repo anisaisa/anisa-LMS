@@ -3,6 +3,7 @@ using anisa_lms.Interfaces.IRepository;
 using anisa_lms.Interfaces.IService;
 using anisa_lms.Models;
 using AutoMapper;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace anisa_lms.Services
 {
@@ -13,7 +14,8 @@ namespace anisa_lms.Services
     ICourseRepository courseRepo,
     IModuleRepository moduleRepo,
     IModuleService moduleService,
-    IMapper mapper) : IProgressService
+    IMapper mapper,
+        IMemoryCache cache) : IProgressService
     {
         private readonly IProgressRepository _repo = repo;
         private readonly IMapper _mapper = mapper;
@@ -21,7 +23,15 @@ namespace anisa_lms.Services
         private readonly IEnrollmentAccessService _enrollmentAccess = enrollmentAccess;
         private readonly ICourseRepository _courseRepo = courseRepo;
         private readonly IModuleRepository _moduleRepo = moduleRepo;
-        private readonly IModuleService _moduleService = moduleService;
+
+        private readonly IMemoryCache _cache = cache;
+
+        private const string StudentProgressKey = "student_progress";
+        private const string CourseCompletionKey = "course_completion";
+
+        private static readonly MemoryCacheEntryOptions CacheOptions =
+            new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
 
         public async Task CreateProgress(CreateStudentModuleProgressDto create)
         {
@@ -39,8 +49,10 @@ namespace anisa_lms.Services
 
             await _repo.CreateAsync(progress);
             await _repo.SaveChangesAsync();
+            _cache.Remove($"{StudentProgressKey}_{create.StudentId}_{create.ModuleId}");
+            _cache.Remove($"{CourseCompletionKey}_{create.StudentId}");
 
-           
+
 
             if (progress.IsCompleted)
             {
@@ -63,7 +75,8 @@ namespace anisa_lms.Services
             _repo.DeleteAsync(progress);
             await _repo.SaveChangesAsync();
 
-           
+            _cache.Remove($"{StudentProgressKey}_{progress.StudentId}");
+            _cache.Remove($"{CourseCompletionKey}_{progress.StudentId}");
 
             return true;
         }
@@ -93,7 +106,9 @@ namespace anisa_lms.Services
 
             await _repo.SaveChangesAsync();
 
-          
+            _cache.Remove($"{StudentProgressKey}_{progress.StudentId}");
+            _cache.Remove($"{CourseCompletionKey}_{progress.StudentId}");
+
 
             if (!wasCompleted && progress.IsCompleted && progress.Module != null)
             {
@@ -106,14 +121,23 @@ namespace anisa_lms.Services
         }
 
         public async Task<List<StudentModuleProgressDto>> GetProgressByStudentAsync(
-      string studentId,
-      int courseId)
+     string studentId,
+     int courseId)
         {
+            var cacheKey = $"{StudentProgressKey}_{studentId}_{courseId}";
+
+            if (_cache.TryGetValue(cacheKey, out List<StudentModuleProgressDto>? cached))
+                return cached!;
+
             var progress = await _repo.GetProgressByStudentAsync(
                 studentId,
                 courseId);
 
-            return _mapper.Map<List<StudentModuleProgressDto>>(progress);
+            var result = _mapper.Map<List<StudentModuleProgressDto>>(progress);
+
+            _cache.Set(cacheKey, result, CacheOptions);
+
+            return result;
         }
 
         private async Task CheckCourseCompletionAsync(
