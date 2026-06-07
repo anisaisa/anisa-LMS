@@ -190,7 +190,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
     "http://localhost:4200",
-    "https://YOUR-ANGULAR-DOMAIN.up.railway.app"
+    "https://anisa-lms-frontend-production.up.railway.app"
 )
               .AllowAnyHeader()
               .AllowAnyMethod()
