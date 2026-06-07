@@ -62,8 +62,16 @@ builder.Services.AddSwaggerGen(opt =>
 //    builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var connectionString =
-    Environment.GetEnvironmentVariable("DATABASE_URL")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+    Environment.GetEnvironmentVariable("PGHOST") != null
+        ? $"Host={Environment.GetEnvironmentVariable("PGHOST")};" +
+          $"Port={Environment.GetEnvironmentVariable("PGPORT")};" +
+          $"Database={Environment.GetEnvironmentVariable("PGDATABASE")};" +
+          $"Username={Environment.GetEnvironmentVariable("PGUSER")};" +
+          $"Password={Environment.GetEnvironmentVariable("PGPASSWORD")}"
+        : builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
