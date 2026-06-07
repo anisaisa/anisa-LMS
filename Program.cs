@@ -188,7 +188,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Angular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(
+    "http://localhost:4200",
+    "https://YOUR-ANGULAR-DOMAIN.up.railway.app"
+)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
