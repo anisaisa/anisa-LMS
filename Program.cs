@@ -57,9 +57,16 @@ builder.Services.AddSwaggerGen(opt =>
     });
 });
 
-builder.Services.AddDbContext<AppDbContext>(
-    options => options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContext<AppDbContext>(
+//  options => options.UseNpgsql(
+//    builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var connectionString =
+    Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 // Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -180,6 +187,23 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Role seeder
+//using (var scope = app.Services.CreateScope())
+//{
+//  var services = scope.ServiceProvider;
+
+//try
+//{
+//  await RoleSeeder.Initialize(services);
+//}
+//catch (Exception ex)
+//{
+//  var logger = services.GetRequiredService<ILogger<Program>>();
+//logger.LogError(ex, "An error occurred while seeding roles.");
+//}
+//}
+
+//app.UseCors("Angular");
+// Role seeder
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -193,6 +217,13 @@ using (var scope = app.Services.CreateScope())
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while seeding roles.");
     }
+}
+
+// Apply EF Core migrations automatically
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseCors("Angular");

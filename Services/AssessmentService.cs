@@ -75,6 +75,8 @@ namespace anisa_lms.Services
 
             _courseService.InvalidateCourseCache();
             _cache.Remove($"{UpcomingKeyPrefix}{assessment.CourseId}");
+            _cache.Remove($"{ResultsKeyPrefix}{id}_True");
+            _cache.Remove($"{ResultsKeyPrefix}{id}_False");
 
             return true;
         }
@@ -155,6 +157,8 @@ namespace anisa_lms.Services
 
             _courseService.InvalidateCourseCache(); //opt
             _cache.Remove($"{UpcomingKeyPrefix}{assessment.CourseId}"); //opt
+            _cache.Remove($"{ResultsKeyPrefix}{id}_True");
+            _cache.Remove($"{ResultsKeyPrefix}{id}_False");
 
             return true;
         }
