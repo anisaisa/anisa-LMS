@@ -70,11 +70,14 @@ var connectionString =
           $"Password={Environment.GetEnvironmentVariable("PGPASSWORD")}"
         : builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+Console.WriteLine("PGHOST = " + Environment.GetEnvironmentVariable("PGHOST"));
+Console.WriteLine("PGDATABASE = " + Environment.GetEnvironmentVariable("PGDATABASE"));
+Console.WriteLine("DATABASE_URL = " + Environment.GetEnvironmentVariable("DATABASE_URL"));
+Console.WriteLine("Connection String = " + connectionString);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
+
 
 // Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
