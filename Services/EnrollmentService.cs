@@ -32,11 +32,35 @@ namespace anisa_lms.Services
 
         public async Task CreateEnrollment(CreateEnrollmentDto create)
         {
-            var course = await _courseRepo.GetByIdAsync(create.CourseId) ?? throw new Exception("Course not found");
-            var enrollmentsCount = await _courseRepo.GetEnrollmentsCountAsync(create.CourseId);
+            var course = await _courseRepo.GetByIdAsync(create.CourseId)
+                ?? throw new InvalidOperationException("Course not found.");
 
+            var existing = await _repo.GetByStudentAndCourseAsync(create.StudentId, create.CourseId);
+            if (existing != null)
+            {
+                if (existing.Status == create.Status)
+                {
+                    throw new InvalidOperationException(
+                        "This student is already enrolled in this course.");
+                }
+
+                existing.Status = create.Status;
+                if (create.Status == StudentStatus.Active)
+                {
+                    existing.EnrolledAt = DateTime.UtcNow;
+                }
+
+                await _repo.SaveChangesAsync();
+                _cache.Remove(AllEnrollmentsKey);
+                return;
+            }
+
+            var enrollmentsCount = await _courseRepo.GetEnrollmentsCountAsync(create.CourseId);
             if (course.MaxEnrollments <= enrollmentsCount)
-                throw new Exception("Course is full. You cannot enroll anymore students");
+            {
+                throw new InvalidOperationException(
+                    "Course is full. You cannot enroll any more students.");
+            }
 
             var enrollment = _mapper.Map<Enrollment>(create);
 

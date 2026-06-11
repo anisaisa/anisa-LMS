@@ -6,6 +6,7 @@ namespace anisa_lms.Interfaces.IRepository
     {
         public Task<List<StudentModuleProgress>> GetProgressByStudentAsync(string studentId, int cId);
         public Task<StudentModuleProgress?> GetByIdAsync(int pId);
+        public Task<StudentModuleProgress?> GetByStudentAndModuleAsync(string studentId, int moduleId);
         public Task CreateAsync(StudentModuleProgress moduleProgress);
         public void DeleteAsync(StudentModuleProgress moduleProgress);
         public Task SaveChangesAsync();

@@ -40,6 +40,28 @@ namespace anisa_lms.Services
 
             await _enrollmentAccess.EnsureActiveEnrollmentAsync(create.StudentId!, targetModule.CourseId);
 
+            var existing = await _repo.GetByStudentAndModuleAsync(create.StudentId!, create.ModuleId);
+            if (existing != null)
+            {
+                var wasCompleted = existing.IsCompleted;
+                existing.IsCompleted = create.IsCompleted;
+
+                if (!wasCompleted && existing.IsCompleted)
+                {
+                    existing.CompletionDate = create.CompletionDate ?? DateTime.UtcNow;
+                }
+
+                await _repo.SaveChangesAsync();
+                InvalidateProgressCache(create.StudentId!, create.ModuleId, targetModule.CourseId);
+
+                if (!wasCompleted && existing.IsCompleted)
+                {
+                    await CheckCourseCompletionAsync(create.StudentId!, targetModule.CourseId);
+                }
+
+                return;
+            }
+
             var progress = _mapper.Map<StudentModuleProgress>(create);
 
             if (progress.IsCompleted && progress.CompletionDate == null)
@@ -49,10 +71,7 @@ namespace anisa_lms.Services
 
             await _repo.CreateAsync(progress);
             await _repo.SaveChangesAsync();
-            _cache.Remove($"{StudentProgressKey}_{create.StudentId}_{create.ModuleId}");
-            _cache.Remove($"{CourseCompletionKey}_{create.StudentId}");
-
-
+            InvalidateProgressCache(create.StudentId!, create.ModuleId, targetModule.CourseId);
 
             if (progress.IsCompleted)
             {
@@ -72,11 +91,15 @@ namespace anisa_lms.Services
                     progress.Module.CourseId);
             }
 
+            var courseId = progress.Module?.CourseId;
+
             _repo.DeleteAsync(progress);
             await _repo.SaveChangesAsync();
 
-            _cache.Remove($"{StudentProgressKey}_{progress.StudentId}");
-            _cache.Remove($"{CourseCompletionKey}_{progress.StudentId}");
+            if (courseId != null)
+            {
+                InvalidateProgressCache(progress.StudentId!, progress.ModuleId, courseId.Value);
+            }
 
             return true;
         }
@@ -106,8 +129,13 @@ namespace anisa_lms.Services
 
             await _repo.SaveChangesAsync();
 
-            _cache.Remove($"{StudentProgressKey}_{progress.StudentId}");
-            _cache.Remove($"{CourseCompletionKey}_{progress.StudentId}");
+            if (progress.Module != null)
+            {
+                InvalidateProgressCache(
+                    progress.StudentId!,
+                    progress.ModuleId,
+                    progress.Module.CourseId);
+            }
 
 
             if (!wasCompleted && progress.IsCompleted && progress.Module != null)
@@ -138,6 +166,13 @@ namespace anisa_lms.Services
             _cache.Set(cacheKey, result, CacheOptions);
 
             return result;
+        }
+
+        private void InvalidateProgressCache(string studentId, int moduleId, int courseId)
+        {
+            _cache.Remove($"{StudentProgressKey}_{studentId}_{courseId}");
+            _cache.Remove($"{StudentProgressKey}_{studentId}_{moduleId}");
+            _cache.Remove($"{CourseCompletionKey}_{studentId}");
         }
 
         private async Task CheckCourseCompletionAsync(

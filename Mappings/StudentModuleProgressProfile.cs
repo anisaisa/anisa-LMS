@@ -9,9 +9,10 @@ namespace anisa_lms.Mappings
         public StudentModuleProgressProfile()
         {
             CreateMap<StudentModuleProgress, StudentModuleProgressDto>()
-    .ForMember(
-        dest => dest.StudentFullName,
-        opt => opt.MapFrom(src => src.Student!.FullName));
+                .ForMember(dest => dest.ModuleId, opt => opt.MapFrom(src => src.ModuleId))
+                .ForMember(
+                    dest => dest.StudentFullName,
+                    opt => opt.MapFrom(src => src.Student != null ? src.Student.FullName : ""));
 
             CreateMap<CreateStudentModuleProgressDto, StudentModuleProgress>();
 

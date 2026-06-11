@@ -15,7 +15,14 @@ namespace anisa_lms.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateEnrollmentDto create)
         {
-            await _enrollmentService.CreateEnrollment(create);
+            try
+            {
+                await _enrollmentService.CreateEnrollment(create);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
 
             return Ok(new { message = "Student enrolled successfully." });
         }
