@@ -31,7 +31,7 @@ namespace anisa_lms.Repositories
             return await _context.Assessments.FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public IQueryable<Assessment> GetUpcomingQueryable(int cId)
+        public IQueryable<Assessment> GetUpcomingQueryable(int cId) //build query step by step and execute only once at the end
         {
             return _context.Assessments
                 .AsNoTracking()

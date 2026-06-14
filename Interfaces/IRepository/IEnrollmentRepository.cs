@@ -10,6 +10,6 @@ namespace anisa_lms.Interfaces.IRepository
         public Task SaveChangesAsync();
         public Task<List<Enrollment>> GetAllAsync();
 
-      public Task<Enrollment?> GetByStudentAndCourseAsync(string studentId, int courseId); //anisa
+      public Task<Enrollment?> GetByStudentAndCourseAsync(string studentId, int courseId); 
     }
 }

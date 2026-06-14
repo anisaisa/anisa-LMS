@@ -33,12 +33,15 @@ namespace anisa_lms.Services
             new MemoryCacheEntryOptions()
                 .SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
 
-        public async Task CreateProgress(CreateStudentModuleProgressDto create)
+        public async Task CreateProgress(CreateStudentModuleProgressDto create, bool requireActiveEnrollment)
         {
             var targetModule = await _moduleRepo.GetByIdAsync(create.ModuleId)
                 ?? throw new InvalidOperationException("Module not found.");
 
-            await _enrollmentAccess.EnsureActiveEnrollmentAsync(create.StudentId!, targetModule.CourseId);
+            await _enrollmentAccess.EnsureProgressWriteAllowedAsync(
+                create.StudentId!,
+                targetModule.CourseId,
+                requireActiveEnrollment);
 
             var existing = await _repo.GetByStudentAndModuleAsync(create.StudentId!, create.ModuleId);
             if (existing != null)
@@ -79,16 +82,17 @@ namespace anisa_lms.Services
             }
         }
 
-        public async Task<bool?> DeleteProgress(int pId)
+        public async Task<bool?> DeleteProgress(int pId, bool requireActiveEnrollment)
         {
             var progress = await _repo.GetByIdAsync(pId);
             if (progress == null) return null;
 
             if (progress.Module != null)
             {
-                await _enrollmentAccess.EnsureActiveEnrollmentAsync(
+                await _enrollmentAccess.EnsureProgressWriteAllowedAsync(
                     progress.StudentId!,
-                    progress.Module.CourseId);
+                    progress.Module.CourseId,
+                    requireActiveEnrollment);
             }
 
             var courseId = progress.Module?.CourseId;
@@ -104,7 +108,7 @@ namespace anisa_lms.Services
             return true;
         }
 
-        public async Task<bool?> UpdateProgress(int pId, UpdateStudentModuleProgress update)
+        public async Task<bool?> UpdateProgress(int pId, UpdateStudentModuleProgress update, bool requireActiveEnrollment)
         {
             var progress = await _repo.GetByIdAsync(pId);
 
@@ -113,9 +117,10 @@ namespace anisa_lms.Services
 
             if (progress.Module != null)
             {
-                await _enrollmentAccess.EnsureActiveEnrollmentAsync(
+                await _enrollmentAccess.EnsureProgressWriteAllowedAsync(
                     progress.StudentId!,
-                    progress.Module.CourseId);
+                    progress.Module.CourseId,
+                    requireActiveEnrollment);
             }
 
             var wasCompleted = progress.IsCompleted;

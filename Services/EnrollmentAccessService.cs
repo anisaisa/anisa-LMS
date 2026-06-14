@@ -28,4 +28,24 @@ public class EnrollmentAccessService(IEnrollmentRepository enrollmentRepo) : IEn
             throw new EnrollmentAccessException("Your enrollment in this course is not active.");
         }
     }
+
+    public async Task EnsureProgressWriteAllowedAsync(string studentId, int courseId, bool requireActive)
+    {
+        if (string.IsNullOrWhiteSpace(studentId))
+        {
+            throw new EnrollmentAccessException("Student id is required.");
+        }
+
+        var enrollment = await enrollmentRepo.GetByStudentAndCourseAsync(studentId, courseId);
+
+        if (enrollment == null)
+        {
+            throw new EnrollmentAccessException("This student is not enrolled in this course.");
+        }
+
+        if (requireActive && enrollment.Status != StudentStatus.Active)
+        {
+            throw new EnrollmentAccessException("Your enrollment in this course is not active.");
+        }
+    }
 }

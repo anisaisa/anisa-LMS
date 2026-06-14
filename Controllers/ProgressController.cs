@@ -31,8 +31,9 @@ namespace anisa_lms.Controllers
         public async Task<IActionResult> Create([FromBody] CreateStudentModuleProgressDto create)
 
         {
+            var requireActiveEnrollment = User.IsInRole("Student");
 
-            await _progressService.CreateProgress(create);
+            await _progressService.CreateProgress(create, requireActiveEnrollment);
 
 
 
@@ -48,7 +49,9 @@ namespace anisa_lms.Controllers
 
         {
 
-            var result = await _progressService.UpdateProgress(pId, update);
+            var requireActiveEnrollment = User.IsInRole("Student");
+
+            var result = await _progressService.UpdateProgress(pId, update, requireActiveEnrollment);
 
             if (result == null) return NotFound(new { message = "Progress with given ID does not exist." });
 
@@ -83,7 +86,9 @@ namespace anisa_lms.Controllers
 
         {
 
-            var result = await _progressService.DeleteProgress(pId);
+            var requireActiveEnrollment = User.IsInRole("Student");
+
+            var result = await _progressService.DeleteProgress(pId, requireActiveEnrollment);
 
             if (result == null) return NotFound(new { message = "Progress with given ID does not exist." });
 

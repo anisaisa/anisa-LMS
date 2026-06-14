@@ -1,6 +1,6 @@
 ﻿namespace anisa_lms.DTOs
 {
-    public class PagedListDto<T>
+    public class PagedListDto<T>  //generic dto it can be used for whichever dto we want
     {
         public List<T> Items { get; set; } = [];
         public int TotalCount { get; set; }

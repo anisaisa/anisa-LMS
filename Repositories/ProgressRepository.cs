@@ -21,13 +21,14 @@ namespace anisa_lms.Repositories
 
         public async Task<StudentModuleProgress?> GetByIdAsync(int pId)
         {
-            return await _context.ModuleProgresses.Include(p => p.Module)
+            return await _context.ModuleProgresses
+                .Include(p => p.Module)
                 .FirstOrDefaultAsync(p => p.Id == pId);
         }
 
         public async Task<StudentModuleProgress?> GetByStudentAndModuleAsync(string studentId, int moduleId)
         {
-            return await _context.ModuleProgresses
+            return await _context.ModuleProgresses.AsNoTracking()
                 .Include(p => p.Module)
                 .FirstOrDefaultAsync(p => p.StudentId == studentId && p.ModuleId == moduleId);
         }

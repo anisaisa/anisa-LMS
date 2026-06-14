@@ -18,11 +18,11 @@ namespace anisa_lms.Data
             base.OnModelCreating(builder);
 
             builder.Entity<Enrollment>()
-                .HasIndex(e => new { e.CourseId, e.StudentId })
+                .HasIndex(e => new { e.CourseId, e.StudentId }) //one student cannot be enrolled at same course twice
                 .IsUnique();
 
             builder.Entity<StudentModuleProgress>()
-        .HasIndex(p => new { p.StudentId, p.ModuleId })
+        .HasIndex(p => new { p.StudentId, p.ModuleId })  //one student has one progress record per module
         .IsUnique();
         }
     }

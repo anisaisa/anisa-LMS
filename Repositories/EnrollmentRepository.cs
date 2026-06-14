@@ -24,6 +24,7 @@ namespace anisa_lms.Repositories
             return await _context.Enrollments
                 .AsNoTracking()
                 .Include(e => e.Student)
+                .Include(e => e.Course)
                 .ToListAsync();
         }
 
@@ -31,6 +32,7 @@ namespace anisa_lms.Repositories
         {
             return await _context.Enrollments
                 .Include(e => e.Student)
+                .Include(e => e.Course)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
@@ -46,7 +48,7 @@ namespace anisa_lms.Repositories
             return await _context.Enrollments
                 .FirstOrDefaultAsync(e =>
                     e.StudentId == studentId &&
-                    e.CourseId == courseId); //anisa
+                    e.CourseId == courseId); 
         }
     }
 }

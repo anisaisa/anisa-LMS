@@ -21,6 +21,9 @@ namespace anisa_lms.DTOs
     public class EnrollmentDto : EnrollmentBaseDto
     {
         public int Id { get; set; }
+        public string StudentId { get; set; } = "";
         public string StudentFullName { get; set; } = "";
+        public int CourseId { get; set; }
+        public string CourseTitle { get; set; } = "";
     }
 }

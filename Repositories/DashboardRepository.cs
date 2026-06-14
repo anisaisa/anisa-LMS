@@ -70,7 +70,9 @@ namespace anisa_lms.Repositories
             var myCourses = await query.ToListAsync();
             var recentCourses = await query.OrderByDescending(c => c.CreatedAt).Take(5).ToListAsync();
             var assessments = await query.Include(c => c.Assessments).Select(c => c.Assessments).ToListAsync();
-            var studentsEnrolled = await _context.Enrollments.CountAsync();
+            //var studentsEnrolled = await _context.Enrollments.CountAsync();
+            var studentsEnrolled = await _context.Enrollments
+    .CountAsync(e => e.Course.InstructorId == instructorId);
 
             return new InstructorDashboardDto
             {

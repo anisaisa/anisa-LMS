@@ -66,7 +66,7 @@ namespace anisa_lms.Services
                 dto.IsLocked = !prevModuleCompleted;
 
                 var progress = studentProgress
-                    .FirstOrDefault(p => p.ModuleId == module.Id);
+                    .FirstOrDefault(p => p.ModuleId == module.Id); 
 
                 prevModuleCompleted = progress?.IsCompleted ?? false;
 
